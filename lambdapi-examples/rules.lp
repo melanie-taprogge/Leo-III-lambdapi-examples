@@ -1,4 +1,5 @@
-require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Eq Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.HOL Stdlib.Impred Leo-III-lambdapi-examples.extt;
+require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Eq Stdlib.Nat Stdlib.Bool 
+Stdlib.List Stdlib.HOL Stdlib.Impred lambdapi-examples.extt;
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////// CALCULUS RULES /////////////////////////////////////////

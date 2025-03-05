@@ -1,7 +1,7 @@
 require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Eq Stdlib.Nat 
 Stdlib.Classic Stdlib.Bool Stdlib.List Stdlib.HOL Stdlib.Impred 
-Leo-III-lambdapi-examples.extt Leo-III-lambdapi-examples.rules 
-Leo-III-lambdapi-examples.literalLevelOperations;
+lambdapi-examples.extt lambdapi-examples.rules 
+lambdapi-examples.literalLevelOperations;
 
 // Example of the encoding of a straight-froward ND proof:
 

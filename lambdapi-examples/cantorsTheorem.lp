@@ -1,6 +1,6 @@
 require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.HOL Stdlib.Eq 
 Stdlib.Impred Stdlib.Nat Stdlib.Bool Stdlib.List 
-Leo-III-lambdapi-examples.extt Leo-III-lambdapi-examples.rules;
+lambdapi-examples.extt lambdapi-examples.rules;
 
 // OBJECT DECLARATIONS ///////////////////////////////////
 
