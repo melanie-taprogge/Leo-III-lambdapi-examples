@@ -1,7 +1,9 @@
-require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Eq Stdlib.Nat 
-Stdlib.Classic Stdlib.Bool Stdlib.List Stdlib.HOL Stdlib.Impred 
-lambdapi-examples.extt lambdapi-examples.rules 
-lambdapi-examples.literalLevelOperations;
+// Necessary standard library encodings
+require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Epsilon Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Classic;
+
+// Encodings derived in the scope of the Leo-III encoding effort
+require open lambdapi-examples.simpRules lambdapi-examples.epCalculus lambdapi-examples.implicitTransformations lambdapi-examples.literalLevelOperations;
+
 
 // Example of the encoding of a straight-froward ND proof:
 

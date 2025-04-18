@@ -1,6 +1,8 @@
-require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.HOL Stdlib.Eq 
-Stdlib.Impred Stdlib.Nat Stdlib.Bool Stdlib.List 
-lambdapi-examples.extt lambdapi-examples.rules;
+// Necessary standard library encodings
+require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Epsilon Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Classic;
+
+// Encodings derived in the scope of the Leo-III encoding effort
+require open lambdapi-examples.simpRules lambdapi-examples.epCalculus lambdapi-examples.implicitTransformations;
 
 // OBJECT DECLARATIONS ///////////////////////////////////
 
@@ -13,7 +15,7 @@ symbol sk2: (τ ((ι ⤳ o) ⤳ ι));
 opaque symbol encodedProof:π ¬ `∃ (A : τ (ι ⤳ (ι ⤳ o))), 
     `∀ (B : τ (ι ⤳ o)), `∃ (C : τ ι), A C = B ≔
 begin
-	refine dne (¬ `∃ (A : τ (ι ⤳ (ι ⤳ o))), 
+	refine ¬¬ₑ (¬ `∃ (A : τ (ι ⤳ (ι ⤳ o))), 
         `∀ (B : τ (ι ⤳ o)), `∃ (C : τ ι), A C = B) _;
 	assume negatedConjecture;
 	// Rule "PolaritySwitch"
@@ -23,8 +25,8 @@ begin
             `∀ (B : τ (ι ⤳ o)), `∃ (C : τ ι), A C = B) = 
             (¬ (¬ `∃ (A : τ (ι ⤳ (ι ⤳ o))), 
             `∀ (B : τ (ι ⤳ o)), `∃ (C : τ ι), A C = B)))
-			{refine ¬¬ₑ_eq (`∃ (A : τ (ι ⤳ (ι ⤳ o))), 
-                `∀ (B : τ (ι ⤳ o)), `∃ (C : τ ι), A C = B)};
+			{refine eq_sym (¬¬ₑ_eq (`∃ (A : τ (ι ⤳ (ι ⤳ o))), 
+                `∀ (B : τ (ι ⤳ o)), `∃ (C : τ ι), A C = B))};
 		rewrite PolaritySwitch_lit0;
 		refine negatedConjecture};
 	// Rule "CNF" (unencoded)
@@ -80,11 +82,11 @@ begin
             (sk2 (λ (C : τ ι), ¬ (sk1 C C))))) ∨ ¬ ⊤)
 			{refine (step252 (sk2 (λ (C : τ ι), 
 			    ¬ (sk1 C C))) (λ (C : τ ι), ¬ (sk1 C C)))};
-		rewrite ∨⊥;
-		rewrite .[x in _ ∨ x] (¬eqxx o ((λ (C : τ ι), 
+		rewrite left ∨⊥;
+		rewrite left .[x in _ ∨ x] (¬=_idem o ((λ (C : τ ι), 
             ¬ (sk1 C C)) (sk2 (λ (C : τ ι), ¬ (sk1 C C)))));
-		rewrite .[x in _ ∨ x] ∨⊥;
-		rewrite .[x in _ ∨ _ ∨ x] ¬⊤;
+		rewrite left .[x in _ ∨ x] ∨⊥;
+		rewrite left .[x in _ ∨ _ ∨ x] ¬⊤;
 		refine Substitution};
 	// Rule "BoolExt"
 	have step8 : Π (B : τ ι), Π (A : τ (ι ⤳ o)), 
@@ -126,11 +128,11 @@ begin
 		    C)))) (sk2 (λ (C : τ ι), ¬ (sk1 C C)))) ∨ ¬ ⊤)
 			{refine (step18 (sk2 (λ (C : τ ι), 
 			    ¬ (sk1 C C))) (λ (C : τ ι), ¬ (sk1 C C)))};
-		rewrite ∨⊥;
-		rewrite .[x in _ ∨ x] ¬eqxx o ((λ (C : τ ι), 
+		rewrite left ∨⊥;
+		rewrite left .[x in _ ∨ x] ¬=_idem o ((λ (C : τ ι), 
 		    (¬ (sk1 C C))) (sk2 (λ (C : τ ι), ¬ (sk1 C C))));
-		rewrite .[x in _ ∨ x] ∨⊥;
-		rewrite .[x in _ ∨ _ ∨ x] ¬⊤;
+		rewrite left .[x in _ ∨ x] ∨⊥;
+		rewrite left .[x in _ ∨ _ ∨ x] ¬⊤;
 		refine Substitution};
 	// Rule "RewriteSimp"
 	have step384 : π ⊥
