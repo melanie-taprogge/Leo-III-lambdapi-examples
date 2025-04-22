@@ -1,4 +1,4 @@
-require open Stdlib.Set Stdlib.Prop Stdlib.Classic Stdlib.FOL Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.FunExt lambdapi-examples.simpRules Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Epsilon lambdapi-examples.metaTheorems;
+require open Stdlib.Set Stdlib.Prop Stdlib.Classic Stdlib.FOL Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.FunExt lambdapi-examples.simpRules Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Epsilon;
 
 /******************************************************************************
  *  De Morgan's Laws on ∧ and ∨
