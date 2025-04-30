@@ -1,4 +1,15 @@
-require open Stdlib.Set Stdlib.Prop Stdlib.Classic Stdlib.FOL Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.FunExt lambdapi-examples.simpRules Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Epsilon;
+require open Stdlib.Set Stdlib.Prop Stdlib.Classic Stdlib.FOL Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.FunExt lambdapi-examples.simpRules Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Epsilon lambdapi-examples.userDefinedTacticsPrelim;
+
+/******************************************************************************
+ *  Lemmas
+ ******************************************************************************/
+
+ opaque symbol =⇒ [a b] : π (a = b) → π a → π b ≔
+ begin
+   assume a b h0 h1;
+   refine ind_eq (eq_sym h0) (λ x, x) h1
+ end;
+
 
 /******************************************************************************
  *  De Morgan's Laws on ∧ and ∨
@@ -116,6 +127,24 @@ symbol ∧∨_dist_r x y z :
 *  Associativity of ∧
 ******************************************************************************/
 
+opaque symbol ∨_assoc x y z : 
+ π (((x ∨ y) ∨ z) = (x ∨ (y ∨ z)))≔
+begin
+ assume x y z;
+ refine propExt ((x ∨ y) ∨ z) (x ∨ (y ∨ z)) _ _
+ {assume h0;
+ refine ∨ₑ h0 _ _
+    {assume h1; refine ∨ₑ h1 _ _
+        {assume h2; refine ∨ᵢ₁ h2}
+        {assume h2; refine ∨ᵢ₂ (∨ᵢ₁ h2)}}
+    {assume h1; refine ∨ᵢ₂ (∨ᵢ₂ h1)}}
+ {assume h0; refine ∨ₑ h0 _ _
+    {assume h1; refine ∨ᵢ₁ (∨ᵢ₁ h1)}
+    {assume h1; refine ∨ₑ h1 _ _
+        {assume h2; refine ∨ᵢ₁ (∨ᵢ₂ h2)}
+        {assume h2; refine ∨ᵢ₂ h2}}}
+end;
+
 symbol ∧_assoc x y z : 
  π (((x ∧ y) ∧ z) = (x ∧ (y ∧ z)))≔
 begin
@@ -174,3 +203,14 @@ begin
  assume a p;
  refine propExt (∃ p) (p (ε p)) (εᵢ [a] p) (εᵢ_rev [a] p)
 end;
+
+
+/******************************************************************************
+*  Definition of Leo-III clausification tactic        
+******************************************************************************/
+
+symbol normAsso ≔ #repeat ((#rewrite ∧_assoc) #orelse (#rewrite ∨_assoc));
+
+symbol allCNFids_list ≔ ((#rewrite deMorgan_∧) ⸬ (#rewrite deMorgan_∨) ⸬ (#rewrite ⇒=∨) ⸬ (#rewrite ¬⇒=∧¬) ⸬ (#and (#rewrite ∧∨_dist_l) normAsso) ⸬ (#and (#rewrite ∧∨_dist_r) normAsso) ⸬ (#rewrite ¬¬ₑ_eq) ⸬ □);
+
+symbol allCNFids_app ≔ #and (#and (#repeat (applyAny allCNFids_list)) normAsso) #reflexivity;
