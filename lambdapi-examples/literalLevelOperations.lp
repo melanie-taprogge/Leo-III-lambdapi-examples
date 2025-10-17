@@ -429,9 +429,6 @@ assert l0 l1 l2 ⊢ permute (1 ⸬ 2 ⸬ 0 ⸬ 3 ⸬ □) (l0 ⸬ l1 ⸬ l2 ⸬ 
     π (l0 ∨ l1 ∨ l2 ∨ l0) → π (l1 ∨ l2 ∨ l0 ∨ l0);
 
 
-
-// double literal deletion theorem
-
 opaque symbol delete (id_list : 𝕃 nat) (output_list : 𝕃 nat) (c: 𝕃 o) : 
     π (id_list ⊆ₙ output_list) → π(disj (literals c id_list)) → π(disj (literals c output_list)) ≔
 begin

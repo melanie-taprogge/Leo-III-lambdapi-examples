@@ -575,12 +575,12 @@ end;
   rule applyAny ($t0 ⸬ $tl) ↪ $t0 #orelse (applyAny $tl)
   with applyAny □ ↪ #fail;
   
-  symbol listOfAllSimpRules ≔ ((#rewrite ∨_idem) ⸬ (#rewrite em_eq_l) ⸬ (#rewrite em_eq_r) ⸬ (#rewrite ∨⊤) ⸬ 
-      (#rewrite ⊤∨) ⸬ (#rewrite ∨⊥) ⸬ (#rewrite ⊥∨) ⸬ (#rewrite ∧_idem) ⸬ (#rewrite ∧_contra_r) ⸬ (#rewrite ∧_contra_l) ⸬ 
-      (#rewrite ∧⊤) ⸬ (#rewrite ⊤∧) ⸬ (#rewrite ∧⊥) ⸬ (#rewrite ⊥∧) ⸬ (#rewrite ⇒⊤) ⸬ (#rewrite ⊥⇒) ⸬ (#rewrite ⊤⇒) ⸬ 
-      (#rewrite ⇒⊥) ⸬ (#rewrite ⇒_idem) ⸬ (#rewrite ⇔⊤) ⸬ (#rewrite ⊤⇔) ⸬ (#rewrite ⊥⇔) ⸬ (#rewrite ⇔⊥) ⸬ 
-      (#rewrite ⇔_idem) ⸬ (#rewrite ¬⊤) ⸬ (#rewrite ¬⊥) ⸬ (#rewrite ¬¬ₑ_eq) ⸬ (#rewrite =⊤) ⸬ (#rewrite ⊤=) ⸬ 
-      (#rewrite =⊥) ⸬ (#rewrite ⊥=) ⸬ (#rewrite =_idem) ⸬ (#rewrite ¬=⊥) ⸬ (#rewrite ¬⊥=) ⸬ (#rewrite ¬=⊤) ⸬ 
-      (#rewrite ¬⊤=) ⸬ (#rewrite ¬=_idem) ⸬ (#rewrite ∀_const) ⸬ (#rewrite ∃_const) ⸬ (#rewrite polarity_switch) ⸬ (#refine ⊤ᵢ) ⸬ □);
+  symbol listOfAllSimpRules ≔ ((#rewrite "" "" ∨_idem) ⸬ (#rewrite "" "" em_eq_l) ⸬ (#rewrite "" "" em_eq_r) ⸬ (#rewrite "" "" ∨⊤) ⸬ 
+      (#rewrite "" "" ⊤∨) ⸬ (#rewrite "" "" ∨⊥) ⸬ (#rewrite "" "" ⊥∨) ⸬ (#rewrite "" "" ∧_idem) ⸬ (#rewrite "" "" ∧_contra_r) ⸬ (#rewrite "" "" ∧_contra_l) ⸬ 
+      (#rewrite "" "" ∧⊤) ⸬ (#rewrite "" "" ⊤∧) ⸬ (#rewrite "" "" ∧⊥) ⸬ (#rewrite "" "" ⊥∧) ⸬ (#rewrite "" "" ⇒⊤) ⸬ (#rewrite "" "" ⊥⇒) ⸬ (#rewrite "" "" ⊤⇒) ⸬ 
+      (#rewrite "" "" ⇒⊥) ⸬ (#rewrite "" "" ⇒_idem) ⸬ (#rewrite "" "" ⇔⊤) ⸬ (#rewrite "" "" ⊤⇔) ⸬ (#rewrite "" "" ⊥⇔) ⸬ (#rewrite "" "" ⇔⊥) ⸬ 
+      (#rewrite "" "" ⇔_idem) ⸬ (#rewrite "" "" ¬⊤) ⸬ (#rewrite "" "" ¬⊥) ⸬ (#rewrite "" "" ¬¬ₑ_eq) ⸬ (#rewrite "" "" =⊤) ⸬ (#rewrite "" "" ⊤=) ⸬ 
+      (#rewrite "" "" =⊥) ⸬ (#rewrite "" "" ⊥=) ⸬ (#rewrite "" "" =_idem) ⸬ (#rewrite "" "" ¬=⊥) ⸬ (#rewrite "" "" ¬⊥=) ⸬ (#rewrite "" "" ¬=⊤) ⸬ 
+      (#rewrite "" "" ¬⊤=) ⸬ (#rewrite "" "" ¬=_idem) ⸬ (#rewrite "" "" ∀_const) ⸬ (#rewrite "" "" ∃_const) ⸬ (#rewrite "" "" polarity_switch) ⸬ (#refine "⊤ᵢ") ⸬ □);
   
-  symbol applyAllSimplifications ≔ #repeat (applyAny listOfAllSimpRules);
+symbol applyAllSimplifications ≔ #repeat (applyAny listOfAllSimpRules);

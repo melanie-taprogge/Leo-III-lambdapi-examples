@@ -157,23 +157,51 @@ begin
 end;
 
 /******************************************************************************
+ *  Extensionality Lemmas
+ ******************************************************************************/
+
+opaque symbol eta_exp [a b : Set] (f : τ (a ⤳ b)) : 
+    π(f = λ x, f x)≔
+begin
+    assume a b f;
+    refine funExt (f) (λ x, f x) _;
+    assume x;
+    reflexivity
+end;
+
+opaque symbol eta_exp_∀ [a : Set] (f : τ (a ⤳ o)) : 
+    π(∀ f = `∀ x, f x)≔
+begin
+    assume a f;
+    rewrite .[x in ∀ x = _] eta_exp f;
+    reflexivity
+end;
+
+/******************************************************************************
  *  Classical Quantifier De Morgan
  ******************************************************************************/
 
  opaque symbol ¬∀=∃¬ (t : Set) (p : τ (t ⤳ o)) : 
  π (¬(∀ p) = (`∃ (x : τ t), ¬ (p x)))≔
 begin
- assume t p;
- refine propExt (¬ (∀ p)) (`∃ x, ¬ (p x)) _ _
- {assume h;
-     refine ∨ₑ (em (`∃ x, ¬ p x)) _ _
-     {assume he; refine he}
-     {assume hne;
-         have forall_p : Π x : τ t, π (p x)
-             {assume a; refine ¬¬ₑ (p a) (λ hp, hne (∃ᵢ [t] [λ y, ¬ p y] a hp))};
-         refine ⊥ₑ (h (λ a, forall_p a))}}
- {assume h h2;
-     refine ∃ₑ [t] [λ y, ¬ p y] h (λ a hna, hna (h2 a))}
+assume t p;
+refine propExt (¬ (∀ p)) (`∃ x, ¬ (p x)) _ _
+{assume h;
+    refine ∨ₑ (em (`∃ x, ¬ p x)) _ _
+    {assume he; refine he}
+    {assume hne;
+        have forall_p : Π x : τ t, π (p x)
+            {assume a; refine ¬¬ₑ (p a) (λ hp, hne (∃ᵢ [t] [λ y, ¬ p y] a hp))};
+        have forall_p2 : π (∀ p)
+            {rewrite eta_exp p; refine forall_p};
+        refine ⊥ₑ (h forall_p2)}}
+{assume h h2;
+    refine ∃ₑ h _;
+    assume x h1;
+    have forAll_x_p : Π x, π (p x)
+        {assume y;
+        refine (=⇒ (eta_exp_∀ p) h2) y};
+    refine h1 (forAll_x_p x)}
 end;
 
 opaque symbol ¬∃=∀¬ (t : Set) (p : τ (t ⤳ o)) : 
@@ -204,13 +232,22 @@ begin
  refine propExt (∃ p) (p (ε p)) (εᵢ [a] p) (εᵢ_rev [a] p)
 end;
 
+opaque symbol ∀_skolem (a: Set) (p: τ (a ⤳ o)) :  
+π (¬ (∀ p) = ¬ (p (ε (λ x, ¬ (p x)))))≔
+begin
+assume a p;
+rewrite ¬∀=∃¬;
+refine  propExt (`∃ x, ¬ (p x)) (¬ (p (ε (λ x, ¬ (p x))))) _ _
+    {assume h; refine ind_eq (eq_sym (∃_skolem a (λ x, ¬ (p x)))) (λ x, x) h}
+    {assume h; refine ind_eq (∃_skolem a (λ x, ¬ (p x))) (λ x, x) h}
+end;
 
 /******************************************************************************
 *  Definition of Leo-III clausification tactic        
 ******************************************************************************/
 
-symbol normAsso ≔ #repeat ((#rewrite ∧_assoc) #orelse (#rewrite ∨_assoc));
+symbol normAsso ≔ #repeat ((#rewrite "" "" ∧_assoc) #orelse (#rewrite "" "" ∨_assoc));
 
-symbol allCNFids_list ≔ ((#rewrite deMorgan_∧) ⸬ (#rewrite deMorgan_∨) ⸬ (#rewrite ⇒=∨) ⸬ (#rewrite ¬⇒=∧¬) ⸬ (#and (#rewrite ∧∨_dist_l) normAsso) ⸬ (#and (#rewrite ∧∨_dist_r) normAsso) ⸬ (#rewrite ¬¬ₑ_eq) ⸬ □);
+symbol allCNFids_list ≔ ((#rewrite"" "" deMorgan_∧) ⸬ (#rewrite "" "" deMorgan_∨) ⸬ (#rewrite"" "" ⇒=∨) ⸬ (#rewrite "" "" ¬⇒=∧¬) ⸬ (#and (#rewrite "" "" ∧∨_dist_l) normAsso) ⸬ (#and (#rewrite "" "" ∧∨_dist_r) normAsso) ⸬ (#rewrite "" "" ¬¬ₑ_eq) ⸬ □);
 
 symbol allCNFids_app ≔ #and (#and (#repeat (applyAny allCNFids_list)) normAsso) #reflexivity;

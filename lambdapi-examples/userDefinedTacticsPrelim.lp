@@ -7,18 +7,20 @@ require open Stdlib.Set Stdlib.Prop Stdlib.List;
  constant symbol Tactic : TYPE;
  symbol tactic : Set;
  rule τ tactic ↪ Tactic;
- 
- symbol #rewrite : Π [a], π a → τ tactic;
- builtin "rewrite" ≔ #rewrite;
- 
+
  constant symbol String : TYPE;
  builtin "String" ≔ String;
+ constant symbol string : Set;
+ rule τ string ↪ String;
+ 
+ symbol #rewrite : String → String → Π [a], π a → Tactic;
+ builtin "rewrite" ≔ #rewrite;
  
  symbol #orelse : Tactic → Tactic → Tactic;
  builtin "orelse" ≔ #orelse;
  notation #orelse infix left 10000;
  
- symbol #refine : Π [a], π a → Tactic;
+ symbol #refine : String → Tactic;
  builtin "refine" ≔ #refine;
  
  symbol #repeat : Tactic → Tactic;
@@ -59,6 +61,9 @@ require open Stdlib.Set Stdlib.Prop Stdlib.List;
  
  symbol #simplify : Tactic;
  builtin "simplify" ≔ #simplify;
+
+ symbol #simplify_beta : Tactic;
+ builtin "simplify rule off" ≔ #simplify_beta;
  
  symbol #solve : Tactic;
  builtin "solve" ≔ #solve;
@@ -66,12 +71,17 @@ require open Stdlib.Set Stdlib.Prop Stdlib.List;
  symbol #symmetry : Tactic;
  builtin "symmetry" ≔ #symmetry;
  
- symbol #try : Tactic;
+ symbol #try : Tactic → Tactic;
  builtin "try" ≔ #try;
  
  symbol #why3 : Tactic;
  builtin "why3" ≔ #why3; 
+
+ symbol #change : Tactic;
+ builtin "change" ≔ #change;
+
  
  // necessary in order to define the tactics
  protected symbol set0 : Set;
  rule τ set0 ↪ Set;
+ 
