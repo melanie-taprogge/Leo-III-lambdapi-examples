@@ -1,11 +1,9 @@
 # Leo-III Lambdapi Examples
 
 
-This repository contains examples demonstrating the ongoing work on the integration of the higher‑order logic automated theorem prover [Leo‑III](https://github.com/leoprover/Leo-III) with the Dedukti framework through output proofs that are verifiable using the interactive proof assistant [Lambdapi](https://github.com/Deducteam/lambdapi). The encodings and examples presented here are part of ongoing research described in the unpublished paper *Towards the Verification of Higher-Order Logic Automated Reasoning* by Taprogge, Blanqui, and Steen.
+This repository contains examples demonstrating the ongoing work on the integration of the higher‑order logic automated theorem prover [Leo‑III](https://github.com/leoprover/Leo-III) with the Dedukti framework through output proofs that are verifiable using the interactive proof assistant [Lambdapi](https://github.com/Deducteam/lambdapi). The encodings and examples presented here are part of ongoing research described in the unpublished paper *Formal Verification of Proofs from Higher-Order Logic Automated Theorem Provers*.
 
-This repository provides an overview and example applications of all of the encodings derived in the project so far. Some of the rules listed here have since been integrated into the Lambdapi standard library (for instance, the rules shown here in `simpRules.lp` are now included in `propExt.lp`). Rules that are not (yet) part of the standard library but are used in our encodings live in the companion library [Leo-III-lambdapi-lib](https://github.com/melanie-taprogge/Leo-III-lambdapi-lib). This repository complements them with theoretical encodings of rules for which the automated encoding is not yet implemented in Leo‑III’s Lambdapi output. All encodings of the *full* EP calculus are collected in `epCalculus.lp`.
-
-> **Note:** What was formerly provided as the `dne` rule (double negation elimination) has been replaced by the standard‑library axiom `¬¬_e`.
+This repository provides an overview and example applications of all of the encodings derived in the project so far. Some of the rules listed here have since been integrated into the Lambdapi standard library (for instance, the rules shown here in `simpRules.lp` are now included in `propExt.lp`). Rules that are not (yet) part of the standard library but are used in our encodings live in the companion library [Leo-III-lambdapi-lib](https://anonymous.4open.science/r/Leo-III-lambdapi-lib-CB15/README.md). This repository complements them with theoretical encodings of rules for which the automated encoding is not yet implemented in Leo‑III’s Lambdapi output. All encodings of the *full* EP calculus are collected in `epCalculus.lp`.
 
 
 ## Repository Structure
@@ -52,9 +50,6 @@ Some of the encodings rely on features added after the latest stable releases of
 ## Getting Started
 
 1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/melanie-taprogge/Leo-III-lambdapi-examples.git
-   cd Leo-III-lambdapi-examples
 
 2. **Verify the Proofs:**
    The proofs in the repository can be checked by running:
@@ -65,8 +60,6 @@ Some of the encodings rely on features added after the latest stable releases of
 
   ## References
 
-- **Taprogge, M., Blanqui, F., & Steen, A. (Unpublished).** *Towards the Verification of Higher-Order Logic Automated Reasoning*. (Manuscript in preparation)
-- **Taprogge, M. (2024).** *Computer-Assisted Proof Verification for Higher-Order Automated Reasoning within the Dedukti Framework* (Master's thesis, Universität Greifswald). [Link to Thesis](https://inria.hal.science/hal-04733263)
 - **Leo-III Automated Theorem Prover.** [GitHub Repository](https://github.com/leoprover/Leo-III)
 - **Lambdapi Proof Assistant.** [GitHub Repository](https://github.com/Deducteam/lambdapi)
 - **Lambdapi Standard Library.** [GitHub Repository](https://github.com/Deducteam/lambdapi-stdlib)
