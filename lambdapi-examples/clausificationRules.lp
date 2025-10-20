@@ -4,18 +4,18 @@ require open Stdlib.Set Stdlib.Prop Stdlib.Classic Stdlib.FOL Stdlib.HOL Stdlib.
  *  Lemmas
  ******************************************************************************/
 
- opaque symbol =⇒ [a b] : π (a = b) → π a → π b ≔
- begin
-   assume a b h0 h1;
-   refine ind_eq (eq_sym h0) (λ x, x) h1
- end;
+opaque symbol =⇒ [a b] : π (a = b) → π a → π b ≔
+begin
+ assume a b h0 h1;
+ refine ind_eq (eq_sym h0) (λ x, x) h1
+end;
 
 
 /******************************************************************************
  *  De Morgan's Laws on ∧ and ∨
  ******************************************************************************/
 
- symbol deMorgan_∧ x y : 
+opaque symbol deMorgan_∧ x y : 
  π (¬(x ∧ y) = (¬ x ∨ ¬ y))≔
 begin
  assume x y;
@@ -30,7 +30,7 @@ begin
      {assume hny; refine hny (∧ₑ₂ hxy)}}
 end;
 
-symbol deMorgan_∨ x y : 
+opaque symbol deMorgan_∨ x y : 
  π (¬(x ∨ y) = (¬ x ∧ ¬ y))≔
 begin
  assume x y;
@@ -48,7 +48,7 @@ end;
 *  Implication Equivalences
 ******************************************************************************/
 
-symbol ⇒=∨ x y :  
+opaque symbol ⇒=∨ x y :  
  π ((x ⇒ y) = (¬ x ∨ y))≔
 begin
  assume x y;
@@ -63,7 +63,7 @@ begin
      {assume hy; refine hy}}
 end;
 
-symbol ¬⇒=∧¬ x y : 
+opaque symbol ¬⇒=∧¬ x y : 
  π (¬(x ⇒ y) = (x ∧ ¬ y))≔
 begin
  assume x y;
@@ -84,7 +84,7 @@ end;
 
 // ... to mimic splitting in leo-III
 
-symbol ∧∨_dist_l x y z : 
+opaque symbol ∧∨_dist_l x y z : 
  π (((x ∧ y) ∨ z) = ((x ∨ z) ∧ (y ∨ z)))≔
 begin
  assume x y z;
@@ -112,7 +112,7 @@ begin
          refine ∨ᵢ₁ (∧ᵢ hx hy)}}
 end;
 
-symbol ∧∨_dist_r x y z : 
+opaque symbol ∧∨_dist_r x y z : 
  π ((z ∨ (x ∧ y)) = ((z ∨ x) ∧ (z ∨ y)))≔
  begin
      assume x y z;
@@ -145,7 +145,7 @@ begin
         {assume h2; refine ∨ᵢ₂ h2}}}
 end;
 
-symbol ∧_assoc x y z : 
+opaque symbol ∧_assoc x y z : 
  π (((x ∧ y) ∧ z) = (x ∧ (y ∧ z)))≔
 begin
  assume x y z;
@@ -161,20 +161,20 @@ end;
  ******************************************************************************/
 
 opaque symbol eta_exp [a b : Set] (f : τ (a ⤳ b)) : 
-    π(f = λ x, f x)≔
+ π(f = λ x, f x)≔
 begin
-    assume a b f;
-    refine funExt (f) (λ x, f x) _;
-    assume x;
-    reflexivity
+ assume a b f;
+ refine funExt (f) (λ x, f x) _;
+ assume x;
+ reflexivity
 end;
 
 opaque symbol eta_exp_∀ [a : Set] (f : τ (a ⤳ o)) : 
-    π(∀ f = `∀ x, f x)≔
+ π(∀ f = `∀ x, f x)≔
 begin
-    assume a f;
-    rewrite .[x in ∀ x = _] eta_exp f;
-    reflexivity
+ assume a f;
+ rewrite .[x in ∀ x = _] eta_exp f;
+ reflexivity
 end;
 
 /******************************************************************************
@@ -235,9 +235,9 @@ end;
 opaque symbol ∀_skolem (a: Set) (p: τ (a ⤳ o)) :  
 π (¬ (∀ p) = ¬ (p (ε (λ x, ¬ (p x)))))≔
 begin
-assume a p;
-rewrite ¬∀=∃¬;
-refine  propExt (`∃ x, ¬ (p x)) (¬ (p (ε (λ x, ¬ (p x))))) _ _
+ assume a p;
+ rewrite ¬∀=∃¬;
+ refine  propExt (`∃ x, ¬ (p x)) (¬ (p (ε (λ x, ¬ (p x))))) _ _
     {assume h; refine ind_eq (eq_sym (∃_skolem a (λ x, ¬ (p x)))) (λ x, x) h}
     {assume h; refine ind_eq (∃_skolem a (λ x, ¬ (p x))) (λ x, x) h}
 end;

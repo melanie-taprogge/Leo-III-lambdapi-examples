@@ -364,45 +364,6 @@ begin
             refine literal_ext cnf x id (ConjImpCl (conj_tail x cnf h3))}}
 end;
 
-// opaque symbol select (id : τ nat) (cnf: 𝕃 o) : 
-//     π (id ∈ₙ (indexes cnf)) → π (conj cnf) → π (literal cnf id) ≔
-// begin
-//     admit
-// end;
-
-// opaque symbol select [cnf: 𝕃 o] (id : τ nat): 
-//     π (conj cnf) → π (id ∈ₙ (indexes cnf)) →  π (literal cnf id) ≔
-// begin
-//     // induction 
-//     //     {induction
-//     //         {assume h0 h1; refine h1}
-//     //         {assume x cnf h0 h1 h2; 
-//     //         refine conj_head x cnf h2}}
-//     //     {assume id h0;
-//     //     induction
-//     //         {assume h1 b; refine ⊥ₑ b}
-//     //         {assume x cnf h1 h3 h2;
-//     //         have ConjImpCl : π (conj cnf ⇒ literal cnf id)
-//     //             {refine h1 cnf (indexes_decrement id x cnf h2)};
-//     //         refine literal_ext cnf x id (ConjImpCl (conj_tail x cnf h3))}}
-//     admit
-// end;
-
-// orig
-// assert c0 c1 c2 c3 ⊢ select 2 (c0 ⸬ c1 ⸬ c2 ⸬ c3 ⸬ □): 
-//     (π ⊤) → π (c0 ∧ c1 ∧ c2 ∧ c3) → π (c2);
-
-// symbol c0 : τ o;
-// symbol c1 : τ o;
-// symbol c2 : τ o;
-// symbol c3 : τ o;
-// symbol sample :  π (conj (c0 ⸬ c1 ⸬ c2 ⸬ c3 ⸬ □));
-
-// type select 2 sample;
-
-
-// assert c0 c1 c2 c3 (p: π (c0 ∧ c1 ∧ c2 ∧ c3)) ⊢ select 2 p: (π ⊤) → π (c2);
-
 
 // permutation theorem 
 

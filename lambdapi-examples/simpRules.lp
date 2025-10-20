@@ -16,7 +16,7 @@ symbol funExt [a b] (f g : τ (a ⤳ b)) : π(`∀ x, f x = g x) → π(f = g);
  *  Commutativity, symmetry and polarity                                                     
  ******************************************************************************/
 
- opaque symbol ∨_com x y:
+opaque symbol ∨_com x y:
  π ((x ∨ y) = (y ∨ x)) ≔
 begin
   assume x y;

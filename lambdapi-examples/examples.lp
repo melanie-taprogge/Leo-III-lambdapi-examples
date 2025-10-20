@@ -40,40 +40,30 @@ begin
     refine transform ((f = g) ⸬ l ⸬ □) 0 (PFE f g x) PFE_premise'
 end;
 
+
 // Example of the application of simplification:
 
 symbol Simp_premise : π ((a ∧ a) = b);
 symbol Simp_example : π (a = b)≔
 begin
     have SimpApp : π (((a ∧ a) = b) ⇒ (a = b))  
-        {rewrite ∧_idem;
-        rewrite ⇒_idem;
-        refine ⊤ᵢ};
+        {rewrite ∧_idem; rewrite ⇒_idem; refine ⊤ᵢ};
     refine SimpApp Simp_premise
 end;
 
- symbol CNFE_Premise: π (c ∨ ¬(∀ q));
- // Declare the newly introduced skolem term and define it using the choice operator
- symbol sk1 : τ ι;
- symbol sk1_def : π (sk1 = ε (λ x, ¬ (q x)));
- symbol CNFE_Example: π (c ∨ ¬ (q sk1))≔
- begin
+
+symbol CNFE_Premise: π (c ∨ ¬(∀ q));
+// Declare the newly introduced skolem term and define it using the choice operator
+symbol sk1 : τ ι;
+symbol sk1_def : π (sk1 = ε (λ x, ¬ (q x)));
+symbol CNFE_Example: π (c ∨ ¬ (q sk1))≔
+begin
     have Skolemisazion : π (c ∨ ¬(∀ q) ⇒ c ∨ ¬ (q sk1))
         {rewrite CNFExist; rewrite sk1_def;
         rewrite ⇒_idem; refine ⊤ᵢ};
     refine Skolemisazion CNFE_Premise;
- end;
-
-// Example of the application of (Triv):
-
-symbol Triv_premise : π (¬ (a = a) ∨ b);
-symbol Triv_example : π b ≔
-begin
-    have TrivApp : π ((¬ (a = a) ∨ b) ⇒ b)  
-        {rewrite ¬=_idem; rewrite ⊥∨;
-        rewrite ⇒_idem; refine ⊤ᵢ};
-    refine TrivApp Triv_premise
 end;
+
 
 // Example of the application of (Bind):
 
@@ -81,10 +71,9 @@ symbol Bind_premise : Π x, π (f x ∨ ¬(x = a));
 symbol Bind_example : π (f a) ≔
 begin
     have Substitution :  π (f a ∨ ¬(a = a)) {refine Bind_premise a};
-    have TrivApp : π ((f a ∨ ¬(a = a)) ⇒ (f a))  
-        {rewrite ¬=_idem; rewrite ∨⊥;
-        rewrite ⇒_idem; refine ⊤ᵢ};
-    refine TrivApp Substitution
+    have RemoveConstraint : π ((f a ∨ ¬(a = a)) ⇒ (f a))  
+        {rewrite ¬=_idem; rewrite ∨⊥; rewrite ⇒_idem; refine ⊤ᵢ};
+    refine RemoveConstraint Substitution
 end;
 
 
@@ -93,17 +82,12 @@ end;
 
 symbol PFE_example'' : Π x, π (l ∨ g x = f x)≔
 begin
-    // Step 1
-    assume x; 
-    // Step 3
-    have PFE_app: π (f x = g x ∨ l) 
-        {refine transform ((f = g) ⸬ l ⸬ □) 0 (PFE f g x) 
-            PFE_premise'};
-    // Step 4
-    rewrite eqSym (g x) (f x); 
+    assume x;  // Step 1
+    have PFE_app: π (f x = g x ∨ l) // Step 3
+        {refine transform ((f = g) ⸬ l ⸬ □) 0 (PFE f g x) PFE_premise'};
+    rewrite eqSym (g x) (f x);  // Step 4
     have Permutation: π (l ∨ (f x = g x))
         {refine permute (1 ⸬ 0 ⸬ □) ((f x = g x) ⸬ l ⸬ □) ⊤ᵢ 
             PFE_app};
-    // Step 5
-    refine Permutation
+    refine Permutation // Step 5
 end;
