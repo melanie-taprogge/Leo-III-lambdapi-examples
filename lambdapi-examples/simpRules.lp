@@ -187,7 +187,6 @@ begin
   refine propExt (x ∧ ⊥) ⊥ _ _
     {assume h1; refine ∧ₑ₂ h1}
     {assume h1;
-     type ⊥ₑ h1;
      refine ∧ᵢ (⊥ₑ h1) h1}
 end;
 

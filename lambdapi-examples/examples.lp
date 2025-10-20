@@ -24,9 +24,7 @@ symbol PFE_premise : π(f = g);
 symbol PFE_example : Π x, π (f x = g x)≔
 begin
     assume x;
-    proofterm;
     refine PFE f g x PFE_premise;
-    proofterm;
 end;
 
 

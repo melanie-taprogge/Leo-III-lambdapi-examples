@@ -42,7 +42,6 @@ begin
     induction
         {assume x h; refine ⊥ₑ h}
         {assume x0 l h0 x1; 
-        type h0 x1;
         rewrite disj_correct; assume h1; 
         simplify; 
         rewrite disj_correct;
@@ -55,7 +54,7 @@ end;
 
 symbol rem [a : Set]: 𝕃 a → ℕ → 𝕃 a;
 rule rem ($l0 ⸬ $l) ($n +1) ↪ ($l0 ⸬ (rem $l $n))
-with rem  ($l0 ⸬ $l) 0 ↪ $l
+with rem  (_ ⸬ $l) 0 ↪ $l
 with rem □ _ ↪ □;
 
 opaque symbol ∨ₑₙ (n : ℕ) (c : 𝕃 o) [r : Prop] : π(disj c) → π((literal c n ⇒ r)) → π((disj(rem c n)) ⇒ r) → π r ≔

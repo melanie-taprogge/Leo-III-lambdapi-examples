@@ -1,5 +1,5 @@
 .POSIX:
-SRC =
+SRC = clausificationRules.lp epCalculus.lp examples.lp implicitTransformations.lp literalLevelOperations.lp multiND.lp simpRules.lp userDefinedTacticsPrelim.lp
 OBJ = $(SRC:.lp=.lpo)
 .SUFFIXES:
 

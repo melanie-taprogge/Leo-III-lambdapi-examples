@@ -27,8 +27,8 @@ require open lambdapi-examples.simpRules lambdapi-examples.literalLevelOperation
             existing theorems or tactics
        (iii) a justification why no encoding is required
 
- (2) An indication of whether the rule is implemented in the current Lambdapi 
-     output of Leo-III.
+ (2) An indication of whether the the atomated generation of verifiable Lambdapi
+        output is implemented for proof steps generated using the rule.
 
  (3) A minimal example illustrating the rule’s use. The following naming
      conventions are used for each rule R:
@@ -44,6 +44,10 @@ require open lambdapi-examples.simpRules lambdapi-examples.literalLevelOperation
        encodings of longer proofs - would each be defined as a sub-step in longer proofs. This does
        not affect the proofs themselves but only defines the symbols representing the encoded steps
        locally. 
+    • The automatically generated artifacts make use of user-defined Lambdapi tactics, which 
+      encapsulate several operations that are written out explicitly in the examples. In addition, 
+      certain examples are expanded into more sub-steps here. These decisions are deliberate and 
+      intended to enhance readability.
 ****************************************************************************/
 
 // Declaration of various constants used in the examples:
@@ -83,16 +87,17 @@ symbol q : τ (ι ⤳ o);
  //    The resulting implication  c ⇒ c  can be proven via:
  //      - `⇒_idem`     collapses trivial implications to ⊤
  //      - `⊤ᵢ`         completes the proof of the goal
- //    These steps can be applied manually or via the user-defined tactic below:
- symbol Triv ≔ #and (#repeat (#orelse (#and (#rewrite "" "" ¬=_idem) ((#rewrite "" "" ∨⊥) #orelse (#rewrite "" "" ⊥∨))) (#rewrite "" "" ¬=_idem))) (#and (#rewrite "" "" ⇒_idem) (#refine "⊤ᵢ"));
 
+ // Note that many of the following examples will involve an application of this 
+ //  precise procedure encoded as a substep "Triv_inst".
+ 
  // Example application
  symbol axiom_Triv_example: π (c ∨ ¬(s = s));
  symbol proof_Triv_example: π (c)≔
  begin
     // Proof the implication
     have Triv_inst : π (c ∨ ¬(s = s) ⇒ c)
-        {eval Triv};
+        {rewrite ¬=_idem; rewrite ∨⊥; rewrite ⇒_idem; refine ⊤ᵢ};
     // Use the proven implication to derive the conjecture
     refine Triv_inst axiom_Triv_example
  end;
@@ -122,7 +127,7 @@ symbol q : τ (ι ⤳ o);
         {refine axiom_Bind_example s};
     // Elimination of the resulting ¬(s = s) using the `Triv` tactic
     have Triv_inst : π ((p s ∨ ¬(s = s)) ⇒ p s)
-        {eval Triv};
+        {rewrite ¬=_idem; rewrite ∨⊥; rewrite ⇒_idem; refine ⊤ᵢ};
     refine Triv_inst Axiom_inst
  end;
 
@@ -166,7 +171,7 @@ symbol q : τ (ι ⤳ o);
         {refine transform (c ⸬  ¬ (t = v) ⸬ ¬(f_2 s = f_2 u) ⸬ □) 2 Decomp_Inst_2 Decomp_App1};
     // Removal from the ¬(f_2 = f_2) using `Triv`
     have Triv_inst : π ((c ∨ ¬(t = v) ∨ ¬(s = u) ∨ ¬(f_2 = f_2)) ⇒ (c ∨ ¬(t = v) ∨ ¬(s = u)))
-        {eval Triv};
+        {rewrite ¬=_idem; rewrite ∨⊥; rewrite ⇒_idem; refine ⊤ᵢ};
     refine Triv_inst Decomp_App_2
  end;
 
@@ -198,6 +203,10 @@ symbol q : τ (ι ⤳ o);
  *  Clausification Rules                                                 
  ******************************************************************************/
 
+// Note: In our implementation, we rely on user-defined Lambdapi tactics to perform
+// the clausification verification steps without reconstructing the exact term
+// positions or the precise order of rule applications performed by Leo-III.
+
  // ─────── Boolean Equalities Used Implicitly During Clausification
  // Implemented
  //
@@ -205,7 +214,7 @@ symbol q : τ (ι ⤳ o);
  //     During the clausification process, several standard Boolean equivalences
  //     are applied automatically, though they are not listed as explicit rules
  //     in the EP calculus. These include, for instance, conversion of implication 
- //     into disjunction
+ //     into disjunction.
 
  //  Encoding:
  //     Equational theorems were encoded covering these rules. They can be found in 
@@ -273,12 +282,12 @@ symbol q : τ (ι ⤳ o);
  // ────────── (CNFAll) 
  // Not implemented
  //  Description:
- //    This rule removes universal quantifiers at the outermost level of literals
+ //    This rule removes universal quantifiers at the outermost scope of clauses
  //    and replaces them with implicitly quantified variables (Encoded using dependant types).
  
  //  Encoding:
  //     In our encoding, object-level universal quantifiers at the outer scope are by default
- //     identified with dependant types via the rewrite-system. For individual literals, the
+ //     identified with dependant types via the rewrite-system. For unit clauses, the
  //     rule application thus needs no encoding. When the literal is part of a longer clause,
  //     the quantifiers can be moved to the outer scope step by step using rules like ∀∨_dist_r 
  //     and ∀∨_dist_l. We can then prove in a sub-step that the premise and conclusion - both 
@@ -324,7 +333,6 @@ begin
         refine =⇒ (eq_sym (∀∨_dist_r t a p)) H0};
 end;
 
-
 opaque symbol ∀_ext [t: Set] [p q] : π(`∀ (x : τ t), p x = q x) → π ((`∀ (x: τ t), p x) = (`∀ (x: τ t), q x))≔
 begin
     assume t p q h;
@@ -335,8 +343,6 @@ begin
         refine =⇒ (eq_sym (h x)) (h1 x)}
 end;
 
-
-symbol move_∀_out ≔ #repeat ((#rewrite  "" "" ∀∨_dist_r) #orelse (#rewrite "" "" ∀∨_dist_l));
 
  // Example 
  symbol axiom_CNFAll_example: π (c ∨ (`∀ x, p x));
@@ -350,20 +356,21 @@ symbol move_∀_out ≔ #repeat ((#rewrite  "" "" ∀∨_dist_r) #orelse (#rewri
     refine =⇒ CNF_app axiom_CNFAll_example;
  end;
 
+
  symbol axiom_CNFAll_example_2: π (c ∨ (`∀ x, p x) ∨ (`∀ x, q x));
 
- // we can also define a tacitc for easier usage:
-
- symbol tryVars: 𝕃 string → Tactic; 
- rule tryVars ($v0 ⸬ ($v1 ⸬ $vs)) ↪ (#assume $v0) #orelse (tryVars ($v1 ⸬ $vs))
- with tryVars ($v0 ⸬ □) ↪ (#assume $v0);
- symbol assumeVars (varList: 𝕃 string) ≔ (#and (#refine "∀_ext _") (tryVars varList));
- symbol move_∀_out_tac (varList: 𝕃 string) ≔ #repeat ((assumeVars varList) #orelse (#and ((#rewrite  "" "" ∀∨_dist_r) #orelse (#rewrite "" "" ∀∨_dist_l)) #simplify_beta));
-
- symbol proof_CNFAll_example_2: Π y, Π z, π (c ∨ p y ∨ q z)≔
+symbol proof_CNFAll_example_2: Π y, Π z, π (c ∨ p y ∨ q z)≔
  begin
     have Clausification: π ((c ∨ (`∀ y, p y) ∨ (`∀ z, q z)) = `∀ z, `∀ y, (c ∨ p y ∨ q z))
-        {eval move_∀_out_tac ("y" ⸬ "z" ⸬ □);
+        {//eval (#repeat ((assumeVars ("y" ⸬ "z" ⸬ □)) #orelse (#and ((#rewrite  "" "" ∀∨_dist_r) #orelse (#rewrite "" "" ∀∨_dist_l)) #simplify_beta)));
+        rewrite ∀∨_dist_r;
+        rewrite ∀∨_dist_r;
+        refine ∀_ext _; 
+        assume x;
+        rewrite ∀∨_dist_l;
+        rewrite ∀∨_dist_r;
+        refine ∀_ext _; 
+        assume y;
         reflexivity};
         assume y z;
     refine (=⇒ Clausification axiom_CNFAll_example_2) z y;
@@ -374,7 +381,7 @@ symbol move_∀_out ≔ #repeat ((#rewrite  "" "" ∀∨_dist_r) #orelse (#rewri
  // Implemented
  //
  // Description:
- //    This rule uses skolemisazion to eliminate existential quantifiers.
+ //    This rule uses Skolemisazion to eliminate existential quantifiers.
 
  // Encoding 
  //     The rule can be proven as an equational theorem (relying on choice)
@@ -426,7 +433,7 @@ symbol move_∀_out ≔ #repeat ((#rewrite  "" "" ∀∨_dist_r) #orelse (#rewri
  // Description:
  //     Derives the mutual implication of two propositions s and t from their
  //     equality (s = t). In Leo-III, this is split into two new clauses, one 
- //     containing the literals ¬s and t, the other one s and ¬ t
+ //     containing the literals ¬ s and t, the other one s and ¬ t
 
  // Encoding
  //    Encoded as two functions deriving the two possible resulting clauses. 
@@ -458,6 +465,7 @@ symbol move_∀_out ≔ #repeat ((#rewrite  "" "" ∀∨_dist_r) #orelse (#rewri
     assume x;
     refine transform (c ⸬ (p s = p x) ⸬ □) 1 (PBE_l (p s) (p x)) (axiom_PBE_example x);
  end;
+
 
  // ────────── (NBE)
  // Implemented
@@ -699,13 +707,14 @@ symbol move_∀_out ≔ #repeat ((#rewrite  "" "" ∀∨_dist_r) #orelse (#rewri
  //     • the remaining literals from both clauses are preserved
  //
  // Encoding:
- //   Implemented case-by-case via concrete rewrite steps, instantiations, and
+ //   Implemented relying on the rewrite tactic, instantiations, and
  //   disjunction handling (∨-intro/elims). The general procedure:
- //     • Case split on UF:
- //       A) UF holds: perform the targeted rewrite. If the with-clause has multiple 
- //          literals, use ∨-elimination to access the equational branch.
- //          Finish by re-introducing the into-clause disjuncts via ∨ introdcution.
- //       B) ¬UF holds: close via ∨ introdcution based on the the negated constraint.
+ //     • Case split on UF (using excluded middle, encoded as `em`):
+ //       A) UF holds: perform the targeted rewrite. If the clause containing the equational 
+ //          literal we perform the rewrite operation with has multiple literals,
+ //          use ∨-elimination (the branch containining the rest of the clause can be 
+ //          closed using ∨-introdcution). 
+ //       B) ¬UF holds: close via ∨-introdcution based on the the negated constraint.
  //
  //   No dedicated Lambdapi rule is required, we do however rely on literal-level transformation
  //   theorems (n-ary ∨-introduction) from "multiND.lp".
@@ -852,7 +861,7 @@ end;
       {eval applyAllSimplifications};
    refine SimpApp (axiom_Simp_example (el ι))
  end;
-print funExt;
+
 
  // ────────── (TD1), (TD2), (CS), (ACD) 
  //     These rules are used internally by the prover to remove clauses from the
@@ -921,18 +930,15 @@ print funExt;
  //     rewrite tactic with the instanciated unit-clause `l = r` and then deleting the resulting
  //     trivially false equational literal using the procedure defined for (Triv).
 
- symbol PSR_simp [p : Prop] (rwEq : π (p = ⊤)) ≔ #and (#and (#and (#rewrite "" "" rwEq) (#rewrite "" ""  ¬⊤)) 
-                   ((#rewrite "" ""  ∨⊥) #orelse (#rewrite "" "" ⊥∨))) (#and (#rewrite "" "" ⇒_idem) (#refine "⊤ᵢ"));
-
  // Example
  symbol axiom_0_PSR_example_2: Π y ,π (c ∨ ¬(f t = f_2 t y));
  symbol axiom_1_PSR_example_2: Π x y, π ((f x = f_2 t y));
  symbol proof_PSR_example_2: π c ≔
  begin
-    have TrivApp : π (((c ∨ ¬(f t = f_2 t (el ι)))) ⇒ c)
+    have Triv_inst : π (((c ∨ ¬(f t = f_2 t (el ι)))) ⇒ c)
         {rewrite axiom_1_PSR_example_2 t (el ι);
-        eval Triv};
-    refine TrivApp (axiom_0_PSR_example_2 (el ι))
+        rewrite ¬=_idem; rewrite ∨⊥; rewrite ⇒_idem; refine ⊤ᵢ};
+    refine Triv_inst (axiom_0_PSR_example_2 (el ι))
  end;
  // Note:
  //    We use the placeholder constant `el` to denote an arbitrary representative of a given type, 
@@ -940,8 +946,8 @@ print funExt;
  //    This is justified by the occupation of types in HOL.
 
  // NSR is handled similarly, but here we have to do a case-split on the literals of the clause `c ∨ (f t = f_2 t y)`
- // In the first case we reason under the assumtion of `c`, which can simply be used to instanciate the goal. 
- // In the second case we assume `(f t = f_2 t y)`, this can be used with the rewrite tactic to derive a contradition
+ // In the first case, we reason under the assumtion of `c`, which can simply be used to instanciate the goal. 
+ // In the second case, we assume `(f t = f_2 t y)`, this can be used with the rewrite tactic to derive a contradition
  // with `(¬(f x = f_2 t y))`:
  symbol axiom_0_NSR_example_2: Π y ,π (c ∨ (f t = f_2 t y));
  symbol axiom_1_NSR_example_2: Π x y, π (¬(f x = f_2 t y));
@@ -950,10 +956,10 @@ print funExt;
     refine ∨ₑ (axiom_0_NSR_example_2 (el ι)) _ _
         {assume piC; refine piC}
         {assume eqLit; 
-        have TrivApp : π (¬(f t = f_2 t (el ι)) ⇒ ⊥)
+        have Triv_inst : π (¬(f t = f_2 t (el ι)) ⇒ ⊥)
             {rewrite eqLit ;
-            eval Triv};
-        refine ⊥ₑ (TrivApp (axiom_1_NSR_example_2 t (el ι)))};
+            rewrite ¬=_idem; rewrite ⇒_idem; refine ⊤ᵢ};
+        refine ⊥ₑ (Triv_inst (axiom_1_NSR_example_2 t (el ι)))};
  end;
 
 
@@ -976,13 +982,11 @@ print funExt;
  symbol axiom_LEQ_example: Π (q : τ(ι ⤳ o)) , π (c ∨ ¬(q s) ∨ (q t));
  symbol proof_LEQ_example: π (c ∨ (s = t))≔
  begin
-    type axiom_LEQ_example (λ x, s = x);
-    compute π (c ∨ (¬ ((λ x, s = x) s) ∨ (λ x, s = x) t));
     have Substitution: π (c ∨ (¬ (s = s)) ∨ (s = t))
         {refine axiom_LEQ_example (λ x, s = x)};
-    have TrivApp: π ((c ∨ (¬ (s = s)) ∨ (s = t)) ⇒ (c ∨ (s = t)))
-        {eval Triv};
-    refine TrivApp Substitution
+    have Triv_inst: π ((c ∨ (¬ (s = s)) ∨ (s = t)) ⇒ (c ∨ (s = t)))
+        {rewrite ¬=_idem; rewrite ⊥∨; rewrite ⇒_idem; refine ⊤ᵢ};
+    refine Triv_inst Substitution
  end;
 
 
@@ -1014,9 +1018,9 @@ print funExt;
  begin
     have Substitution : π ((`∀ x, (x = s) ⇒ q x) ∨ ¬ (s = s))
         {refine  axiom_AEQ_example (=)};
-    have TrivApp : π (((`∀ x, (x = s) ⇒ q x) ∨ ¬ (s = s)) ⇒ (`∀ x, x = s ⇒ q x))
-        {eval Triv};
-    refine TrivApp Substitution
+    have Triv_inst : π (((`∀ x, (x = s) ⇒ q x) ∨ ¬ (s = s)) ⇒ (`∀ x, x = s ⇒ q x))
+        {rewrite ¬=_idem; rewrite ∨⊥; rewrite ⇒_idem; refine ⊤ᵢ};
+    refine Triv_inst Substitution
  end;
 
 
@@ -1072,7 +1076,6 @@ symbol INJ [a b: Set] (f : τ (a ⤳ b)) : π (`∀ x, `∀ y, (¬ (f x = f y) �
         {assume h2; 
         have H2 :  π (f x = f (f_invv (f x)))
             {symmetry;
-            type εᵢ [a] (λ (z: τ a), f z = f x);
             refine εᵢ [a] (λ (z: τ a), f z = f x) _;
             refine ∃ᵢ x _;
             reflexivity};
@@ -1091,8 +1094,7 @@ symbol sk4_def : π (sk4 = (ε (λ f_in, `∀ x1, f_in (f x1) = x1)));
     refine εᵢ [ι ⤳ ι] ((λ f_in, `∀ x0, f_in (f x0) = x0)) (INJ [ι] [ι] f axiom_INJ_example) x;
  end;
 
- // cases with multiple arguments are more complicated and may require permuting the arguments first:
-
+ // Cases with multiple arguments are more complicated and may require permuting the arguments first:
  symbol axiom_INJ_example_2 x y z: π (¬ (f_2 x z = f_2 y z) ∨ (x = y));
  symbol sk5 : τ (ι ⤳ ι ⤳ ι);
  symbol sk5_def z : π (sk5 = (ε (λ (f_inv : τ (ι ⤳ ι ⤳ ι)), `∀ (x : τ ι), (f_inv z (f_2 x z)) = x)));
@@ -1106,9 +1108,8 @@ symbol sk4_def : π (sk4 = (ε (λ f_in, `∀ x1, f_in (f x1) = x1)));
         {assume x y;
         simplify;
         refine axiom_INJ_example_2 x y z};
-    have H00: π (`∃ (f_inv : τ (ι ⤳ ι)), `∀ x, f_inv (f_2'' z x) = x) 
-        {refine INJ (f_2'' z) changedPos'};
-    refine ∃ₑ H00 _;
+
+    refine ∃ₑ (INJ (f_2'' z) changedPos') _;
     assume f_inv0 h0;
     set f_inv ≔ λ (x : τ ι), f_inv0;
     refine ∃ᵢ f_inv _;
@@ -1137,7 +1138,7 @@ symbol sk4_def : π (sk4 = (ε (λ f_in, `∀ x1, f_in (f x1) = x1)));
  symbol axiom_FS_example :
         Π (F : τ(ι ⤳ ι)), π ((F s = v) ∨ ¬(F s = t) ∨ ¬(F u = v));
 
- // for readiablility, we define the intorduced unification constraint here:
+ // For readiablility, we define the intorduced unification constraint here:
  symbol F_inst : τ (ι ⤳ ι) ≔
         λ x, ε (λ z, ((x = s) ⇒ z = t) ∧ ((x = u) ⇒ z = v));
 
