@@ -399,12 +399,20 @@ symbol proof_CNFAll_example_2: Π y, Π z, π (c ∨ p y ∨ q z)≔
  // Example:
  symbol axiom_CNFExist_example: π (c ∨ ¬(∀ p));
  // Declare the newly introduced skolem term and define it using the choice operator
- symbol sk1 : τ ι;
- symbol sk1_def : π (sk1 = ε (λ x, ¬ (p x)));
+//  symbol sk1 : τ ι;
+//  symbol sk1_def : π (sk1 = ε (λ x, ¬ (p x)));
+ symbol sk1 ≔ ε (λ x, ¬ (p x));
+//  symbol proof_CNFExist_example: π (c ∨ ¬ (p sk1))≔
+//  begin
+//     have Skolemisazion : π (c ∨ ¬(∀ p) ⇒ c ∨ ¬ (p sk1))
+//         {rewrite CNFExist; rewrite sk1_def;
+//         rewrite ⇒_idem; refine ⊤ᵢ};
+//     refine Skolemisazion axiom_CNFExist_example;
+//  end;
  symbol proof_CNFExist_example: π (c ∨ ¬ (p sk1))≔
  begin
     have Skolemisazion : π (c ∨ ¬(∀ p) ⇒ c ∨ ¬ (p sk1))
-        {rewrite CNFExist; rewrite sk1_def;
+        {rewrite CNFExist; simplify sk1;
         rewrite ⇒_idem; refine ⊤ᵢ};
     refine Skolemisazion axiom_CNFExist_example;
  end;
@@ -1039,7 +1047,9 @@ end;
     assume a f x;
     rewrite left ⇒=∨;
     assume h0;
-    refine εᵢ f (∃ᵢ [a] [f] x h0)
+    refine εᵢ f _;
+    rewrite eta_exp_∃ f;
+    refine (∃ᵢ [a] [f] x h0)
  end;
 
  // Example

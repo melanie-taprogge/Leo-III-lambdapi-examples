@@ -1,4 +1,4 @@
-require open Leo-III-lambdapi-lib.MetaTheorems;
+require open Stdlib.Disj;
 require open Stdlib.PropExt;
 
 /* 
