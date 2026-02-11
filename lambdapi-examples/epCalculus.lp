@@ -2,7 +2,7 @@
 require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Epsilon Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Classic;
 
 // Encodings derived in the scope of the Leo-III encoding effort
-require open lambdapi-examples.simpRules lambdapi-examples.literalLevelOperations lambdapi-examples.userDefinedTacticsPrelim;
+require open lambdapi-examples.simpRules lambdapi-examples.Disj lambdapi-examples.Conj lambdapi-examples.userDefinedTacticsPrelim;
 
 /***************************************************************************
  This file documents the encoding of the rules of the EP calculus as presented in:
@@ -44,10 +44,10 @@ require open lambdapi-examples.simpRules lambdapi-examples.literalLevelOperation
        encodings of longer proofs - would each be defined as a sub-step in longer proofs. This does
        not affect the proofs themselves but only defines the symbols representing the encoded steps
        locally. 
-    • The automatically generated artifacts make use of user-defined Lambdapi tactics, which 
-      encapsulate several operations that are written out explicitly in the examples. In addition, 
-      certain examples are expanded into more sub-steps here. These decisions are deliberate and 
-      intended to enhance readability.
+     • The automatically generated artifacts make use of user-defined Lambdapi tactics, which 
+       encapsulate several operations that are written out explicitly in the examples. In addition, 
+       certain examples are expanded into more sub-steps here. These decisions are deliberate and 
+       intended to enhance readability.
 ****************************************************************************/
 
 // Declaration of various constants used in the examples:
@@ -133,46 +133,63 @@ symbol q : τ (ι ⤳ o);
 
 
  // ────────── (Decomp) 
- // Not implemented
+ // Implemented
  //  Description:
  //    From an inequality between two applied terms ¬(f s₀ ... sₙ = f t₀ ... tₙ), infer 
  //    that at least one of the arguments differ.
 
- //  Encoding:
- //    The theorem `Decomp` takes a literal ¬(f s = g t) and derives that either 
- //    ¬(f = g) or ¬(s = t). This allows the use of the theorem for repeated applications,
- //    as it also handles unidentical head symbols. For the final application with identical 
- //    head symbols, the rule derives ¬(f = f) ∨ ¬(s = t), the former can be removed using Triv.
- //    The rule is applied using the `transform` theorem.
- symbol Decomp [a b : Set] (s t : τ a) (f g : τ(a ⤳ b)): 
-    π (¬ (f s = g t)) → π (¬ (s = t) ∨ ¬ (f = g)) ≔
+///  Encoding:
+///    The theorem `Decomp_step` takes a literal ¬(f s = g t) and derives either 
+///    ¬(f = g) or ¬(s = t). It is used when more than one argument is applied to
+///    identical head symbols on both sides of the equation and allows a stepwise
+///    decomposition of the application. While this theorem would also be usable
+///    for equations with only one applied argument, this would result in the
+///    generation of a trivially false literal and require its subsequent removal.
+///    For greater efficiency, we therefore complement the encoding `Decomp_step`
+///    with `Decomp_single`, which takes a literal ¬(f s = f t) and derives ¬(s = t).
+///    Both theorems are applied using the `transform` theorem in the case of clauses
+///    with more than one literal.
+
+ opaque symbol Decomp_step [a b : Set] (s t : τ a) (f g : τ(a ⤳ b)): 
+    π (¬ (f s = g t)) → π  (¬ (f = g) ∨ ¬ (s = t)) ≔
  begin
     assume a b s t f g h0;
     refine ∨ₑ (em (s = t)) _ _
         {assume h1; refine ∨ₑ (em (f = g)) _ _
             {assume h2;
-            refine ⊥ₑ [¬ (s = t) ∨ ¬ (f = g)] (h0 (ind_eq h1 (λ x, f x = g t) (ind_eq h2 (λ x, x t = g t) (eq_refl (g t)))))}
-            {assume h2; refine ∨ᵢ₂ h2}}
-        {assume h1; refine ∨ᵢ₁ h1}
+            refine ⊥ₑ [¬ (f = g) ∨ ¬ (s = t)] (h0 (ind_eq h1 (λ x, f x = g t) (ind_eq h2 (λ x, x t = g t) (eq_refl (g t)))))}
+            {assume h2; refine ∨ᵢ₁ h2}}
+        {assume h1; refine ∨ᵢ₂ h1}
+ end;
+
+ opaque symbol Decomp_single [a b : Set] (s t : τ a) (f : τ(a ⤳ b)): 
+    π (¬ (f s = f t)) → π (¬ (s = t)) ≔
+ begin
+    assume a b s t f h0;
+    refine ∨ₑ (em (s = t)) _ _
+        {assume h1; 
+        have H0 : π (¬ (f s = f t) ⇒ ⊥)
+            {rewrite h1;
+            rewrite ¬=_idem;
+            assume h2; refine h2};
+        refine ⊥ₑ (H0 h0)}
+        {assume h1; refine h1}
  end;
 
  // Example 
  symbol axiom_Decomp_example: π (c ∨ ¬((f_2 s t) = (f_2 u v)));
- symbol proof_Decomp_example: π (c ∨ ¬(t = v) ∨ ¬(s = u))≔
+ symbol proof_Decomp_example: π (c ∨  ¬(s = u) ∨ ¬(t = v))≔
  begin
     // Repeated application of `Decomp`
-    have Decomp_Inst_1 : π (¬ (f_2 s t = f_2 u v)) → π (¬ (t = v) ∨ ¬ (f_2 s = f_2 u))
-        {refine Decomp [ι] [ι] t v (f_2 s) (f_2 u)};
-    have Decomp_App1 : π (c ∨ ¬ (t = v) ∨ ¬ (f_2 s = f_2 u))
-        {refine transform [¬(t = v) ∨ ¬ (f_2 s = f_2 u)] (c ⸬ ¬((f_2 s t) = (f_2 u v)) ⸬ □) 1 Decomp_Inst_1 axiom_Decomp_example};
-    have Decomp_Inst_2 : π (¬ (f_2 s = f_2 u)) → π (¬ (s = u) ∨ ¬ (f_2 = f_2))
-        {refine Decomp [ι] [ι ⤳ ι] s u f_2 f_2};
-    have Decomp_App_2 : π (c ∨ ¬(t = v) ∨ ¬(s = u) ∨ ¬(f_2 = f_2))
-        {refine transform (c ⸬  ¬ (t = v) ⸬ ¬(f_2 s = f_2 u) ⸬ □) 2 Decomp_Inst_2 Decomp_App1};
-    // Removal from the ¬(f_2 = f_2) using `Triv`
-    have Triv_inst : π ((c ∨ ¬(t = v) ∨ ¬(s = u) ∨ ¬(f_2 = f_2)) ⇒ (c ∨ ¬(t = v) ∨ ¬(s = u)))
-        {rewrite ¬=_idem; rewrite ∨⊥; rewrite ⇒_idem; refine ⊤ᵢ};
-    refine Triv_inst Decomp_App_2
+    have Decomp_Inst_1 : π (¬ (f_2 s t = f_2 u v)) → π ( ¬ (f_2 s = f_2 u) ∨ ¬ (t = v))
+        {refine Decomp_step [ι] [ι] t v (f_2 s) (f_2 u)};
+    have Decomp_App1 : π (c ∨ ¬ (f_2 s = f_2 u) ∨ ¬ (t = v))
+        {refine transform [¬ (f_2 s = f_2 u) ∨ ¬(t = v)] (c ⸬ ¬((f_2 s t) = (f_2 u v)) ⸬ □) 1 Decomp_Inst_1 axiom_Decomp_example};
+    have Decomp_Inst_2 : π (¬ (f_2 s = f_2 u)) → π (¬ (s = u))
+        {refine Decomp_single [ι] [ι ⤳ ι] s u f_2};
+    have Decomp_App_2 : π (c ∨ ¬(s = u) ∨ ¬(t = v))
+        {refine transform (c ⸬ ¬(f_2 s = f_2 u) ⸬ ¬ (t = v) ⸬ □) 1 Decomp_Inst_2 Decomp_App1};
+    refine Decomp_App_2
  end;
 
 
@@ -250,7 +267,7 @@ symbol q : τ (ι ⤳ o);
  // Example 
  symbol proof_CNFConj_example: π (¬ (p s) ∨ p u) ≔
  begin
-    refine select 1 (c ⸬ (¬ (p s) ∨ p u) ⸬ (¬ (f s = g s) ∨ p u) ⸬ □) ⊤ᵢ proof_CNF_example; 
+    refine ∧ₑₙ 1 (c ⸬ (¬ (p s) ∨ p u) ⸬ (¬ (f s = g s) ∨ p u) ⸬ □) ⊤ᵢ proof_CNF_example; 
  end;
     
 
@@ -725,8 +742,7 @@ symbol proof_CNFAll_example_2: Π y, Π z, π (c ∨ p y ∨ q z)≔
  //       B) ¬UF holds: close via ∨-introdcution based on the the negated constraint.
  //
  //   No dedicated Lambdapi rule is required, we do however rely on literal-level transformation
- //   theorems (n-ary ∨-introduction) from "multiND.lp".
- require open lambdapi-examples.multiND;
+ //   theorems (n-ary ∨-introduction) from "Disj.lp".
 
 
  // Excluded middle for the UF of this example
@@ -769,7 +785,7 @@ end;
             {// Case A: the rest of example clause holds
             assume restClause;
             // we can thus refine using ∨-indtoruction
-            refine (∨ᵢₙ₂ (c ⸬ ((p t ∨ p t) = (s = t))  ⸬ □) (d ⸬ ¬ (p x = p s) ⸬ □) (∨ᵢ₁ restClause))}
+            refine (∨ᵢₙ (c ⸬ ((p t ∨ p t) = (s = t))  ⸬ □) (d ⸬ □) (¬ (p x = p s) ⸬ □) restClause)}
 
             // Case B: Equational literal of example clause holds
             {assume EL;
@@ -777,12 +793,12 @@ end;
             rewrite left .[x in (_ ∨ (((x ∨ _) = _) ∨ _ ∨ _))] EL;
             rewrite left .[x in (_ ∨ (((x ∨ _) = _) ∨ _ ∨ _))] UF;
             // we can thus refine using ∨-indtoruction
-            refine ∨ᵢₙ₁ (c ⸬ (((p x ∨ p t) = (s = t))) ⸬ □) (d ⸬ ¬ (p x = p s) ⸬ □) (axiom_0_Para_example_2 x)}}
+            refine ∨ᵢₙ □ (c ⸬ (((p x ∨ p t) = (s = t))) ⸬ □) (d ⸬ ¬ (p x = p s) ⸬ □) (axiom_0_Para_example_2 x)}}
 
         {// Case B: UF is FALSE
         assume nUF;
         // Close by introducing the left disjunct ¬UF
-        refine ∨ᵢₙ₂ (c ⸬ (((p t ∨ p t) = (s = t))) ⸬ d ⸬ □) (¬ (p x = p s) ⸬ □) nUF}
+        refine ∨ᵢₙ (c ⸬ (((p t ∨ p t) = (s = t))) ⸬ d ⸬ □) (¬ (p x = p s) ⸬ □) □ nUF}
  end;
 
 

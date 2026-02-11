@@ -1,9 +1,14 @@
-require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Eq Stdlib.Nat Stdlib.Bool Stdlib.Classic
-Stdlib.List Stdlib.HOL Stdlib.Impred lambdapi-examples.simpRules;
+/***************************************************************************
+This file contains rules used to verify implicit normlaisazion of equational
+literals in Leo-III.
 
-///////////////////////////////////////////////////////////////////////////////////////
-///////////////////////// IMPLICIT TRANSFORMATIONS ////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////
+We give encodings of some quintessential rules here for self-containedness, 
+but note that versions of many of the theorems — along with other boolean 
+identities — have been added to the Lambdapi standard library (where they 
+live in PropExt.lp).
+****************************************************************************/
+
+require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Eq Stdlib.Nat Stdlib.Bool Stdlib.Classic Stdlib.List Stdlib.HOL Stdlib.Impred lambdapi-examples.simpRules;
 
 // Switching order within equality literals:
 

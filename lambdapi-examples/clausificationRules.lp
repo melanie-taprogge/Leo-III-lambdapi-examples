@@ -1,3 +1,16 @@
+/***************************************************************************
+This file contains rules used in the clausification of Leo-III.
+They are combined in a user defined tactic (defined at the end of the 
+file) for automatic, blind, exhaustive application, not necessitating 
+precise knowledge about the sequence and exact term positions in which
+the rules were applied in concrete automatically generated proofs.
+
+We give encodings of some quintessential rules here for self-containedness, 
+but note that versions of many of the theorems — along with other boolean 
+identities — have been added to the Lambdapi standard library (where they 
+live in PropExt.lp).
+****************************************************************************/
+
 require open Stdlib.Set Stdlib.Prop Stdlib.Classic Stdlib.FOL Stdlib.HOL Stdlib.Eq Stdlib.Impred Stdlib.FunExt lambdapi-examples.simpRules Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Epsilon lambdapi-examples.userDefinedTacticsPrelim;
 
 /******************************************************************************
@@ -81,8 +94,6 @@ end;
 /******************************************************************************
 *  Distributivity
 ******************************************************************************/
-
-// ... to mimic splitting in leo-III
 
 opaque symbol ∧∨_dist_l x y z : 
  π (((x ∧ y) ∨ z) = ((x ∨ z) ∧ (y ∨ z)))≔
@@ -203,8 +214,6 @@ refine propExt (¬ (∀ p)) (`∃ x, ¬ (p x)) _ _
         refine (=⇒ (eta_exp_∀ p) h2) y};
     refine h1 (forAll_x_p x)}
 end;
-
-// does it make sense to have these theorems both here and in the libraries? 
 
 opaque symbol eta_exp_∃ [a : Set] (f : τ (a ⤳ o)) : 
     π(∃ f = `∃ x, f x)≔

@@ -1,9 +1,20 @@
 /***************************************************************************
-This file provides an axiom and various theorems for propositional equality.        
-The theorems are grouped into sections by theme:  
-- Symmetry and polarity  
-- Various Simplifications                              
+This file provides axioms and various theorems for propositional and
+functional extensionality. In particular, many boolean identities used
+throughout the Leo-III verification steps are defined here.
+The theorems are grouped into sections by theme:
+- Commutativity, symmetry and polarity
+- Various simplifications
+
+At the end of the file, we also define a tactic that applies simplifications
+exhaustively and fully automatically.
+
+We give encodings of some quintessential rules here for self-containedness,
+but note that the axioms and versions of many of the theorems — along with 
+other boolean identities — have been added to the Lambdapi standard library 
+(where they live in PropExt.lp and FuncExt.lp).
 ****************************************************************************/
+
 
 require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Eq Stdlib.Impred Stdlib.Classic Stdlib.HOL Stdlib.List lambdapi-examples.userDefinedTacticsPrelim;
 

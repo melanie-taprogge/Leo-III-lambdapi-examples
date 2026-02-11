@@ -2,24 +2,18 @@
 
 -------------------
 
-The library aims to prove the following meta-theorems for conjunctions and disjunctions:
+Note that this file has been added to the standard library. 
+It has been included here for the sake of self-containment.
 
-** Select:
-   This theorem is used when we need to isolate a single clause out of a conjunction of clauses. 
-   For instance, suppose we have a conjunction of clauses  `π (c0 ∧ c1 ∧ c2)` and we want to 
-   select the clause at position `id`.
+The library proves the following meta-theorems:
 
+** n-ary Natural Deduction rules:
+   - ∨ᵢₙ is the n-ary versions of the introduction rule for ∨.
+   - ∨ₑₙ is the n-ary version of the elimination rule for ∨.
+
+** Permute:
    The theorem is instantiated with:
-   - A natural number `id`, the position of the desired clause in the conjunction.
-   - A list of clauses `cnf : 𝕃 o` representing the conjunction.
-
-   The theorem checks whether `id` is indeed in the indexes of `cnf`.  If it is, then from 
-   `π (conj cnf)` it extracts the single clause `π (literal cnf id)`. In other words, it maps 
-   the entire conjunction of clauses to the one at position `id`.
-
-** Permutate:
-   The theorem is instantiated with:
-   - A list of natural numbers representing a disjunction.
+   - A list of natural numbers representing a permutation.
    - A list of terms of type `o` representing a clause.
 
    The theorem verifies that the permuted clause still contains all literals of the original clause. 
@@ -27,10 +21,10 @@ The library aims to prove the following meta-theorems for conjunctions and disju
 
 ** Delete:
    The theorem is instantiated with three lists:
-   - A list of natural numbers representing the indices of literals in the original list. 
+   1. A list of natural numbers representing the indices of literals in the original clause. 
      For literals occurring multiple times, the index of the first occurrence is used for all of the
      subsequent occurrences. For example, for `π (l0 ∨ l1 ∨ l2 ∨ l1)`, this list would be `(0, 1, 2, 1)`.
-   - A second list of natural numbers indicating the desired positions of the literals in the clause.
+   2. A second list of natural numbers indicating the desired positions of the literals in the resulting clause.
      If for instance the second occurrence of `l1` in `π (l0 ∨ l1 ∨ l2 ∨ l1)` should be deleted, the 
      derived clause would be `π (l0 ∨ l1 ∨ l2)`, and the list that must be provided would be (0, 1, 2).
      To delete the first occurrence of `l1`, and derive the clause `π (l0 ∨ l2 ∨ l1)`, the list would 
@@ -40,6 +34,17 @@ The library aims to prove the following meta-theorems for conjunctions and disju
    The resulting theorem verifies if each literal from the original clause is still present at least once 
    in the derived clause. If so, it maps the disjunction of the original literals to the disjunction after 
    the desired double literal deletion. This approach allows multiple identical literals to be deleted at once.
+
+** DeleteDoubles:
+   A convenience version of Delete, where duplicate occurrences of literals are removed automatically,
+   leaving only the first occurrence.
+
+   The theorem is instantiated with:
+   - A list of natural numbers representing the indices of literals in the original clause. As in Delete,
+     when a literal occurs multiple times, all occurrences are represented using the index of its first occurrence.
+   - A list of terms of type `o`, representing literals.
+
+   The theorem maps the original clause directly to a version where all duplicate literals have been removed.
 
 ** Transform:
    This theorem is useful when a rule is applied to only one literal of a clause. 
@@ -55,7 +60,7 @@ The library aims to prove the following meta-theorems for conjunctions and disju
 
 ** General Concept:
    The general idea behind the permutation and double literal deletion theorems is to evaluate a list of natural 
-   numbers representing the positions of literals after respective operations with respect to the list of literals. 
+   numbers representing the positions of literals after respective operations with respect to the original clause. 
    A computation ensures the operation is admissible:
    - In the case of permutations, all literals must still be present in the permuted clause.
    - In the case of double literal deletion, each literal must still be present at least once.
@@ -65,21 +70,18 @@ The library aims to prove the following meta-theorems for conjunctions and disju
 ---
 
 ** Defined Operations:
+                        `x ∈ₙ l`: Special case of ∈ for natural numbers and equality relation `eqn`
                    `literal n l`: Returns the element of the list `l` of terms of type `o` at index `n`.
                  `literals ln l`: Takes as arguments a list `ln` of natural numbers and a list `l` of terms of 
                                   type `o` and returns a list of  the elements of `l` ordered according to the 
                                   indices in `ln`.
                         `disj l`: Returns the disjunction of all literals in the list `l`.
-                        `conj l`: Returns the conjunction of all terms of type `o` in the list `l`.
-               `⊆ [a] eqb l1 l2`: For two lists `l1` and `l2` of type `a` and a boolean equality relation `eqb` 
-                                  for elements of type `a`, this operation returns `true` if `l2` includes all 
-                                  elements of `l1`, and `false` otherwise.
                       `l1 ⊆ₙ l2`: Special case of ⊆ for natural numbers and equality relation `eqn`
       `preserves_contents ln lo`: Takes a list of natural numbers (`ln`) and a list of terms of type `o` (`lo`) 
                                   as arguments. Returns `true` if every index of `lo` is included in `ln`.
 */
 
-require open Stdlib.Set Stdlib.Prop Stdlib.FOL Stdlib.Eq Stdlib.Nat Stdlib.Bool Stdlib.List Stdlib.Impred;
+require open Stdlib.List Stdlib.PropExt;
   
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -94,50 +96,11 @@ notation ∈ₙ infix right 40;
 symbol literal ≔ nth ⊥;
 assert l0 l1 l2 ⊢ literal (l0 ⸬ l1 ⸬ l2 ⸬ l1 ⸬ □) 1 ≡ l1;
 
-opaque symbol literal_ext (l: 𝕃 o) (l0 : τ o) (n: τ nat) : 
-    π (literal l n) → π (literal (l0 ⸬ l) (n +1)) ≔
-begin
-    assume l l0 n h1;
-    refine h1
-end;
-
 symbol literals ≔ nths ⊥;
 assert l0 l1 l2 ⊢ literals (l0 ⸬ l1 ⸬ l2  ⸬ l1 ⸬ □) (1 ⸬ 2 ⸬ 0 ⸬ 3 ⸬ □) ≡ l1 ⸬ (l2  ⸬ (l0 ⸬ (l1 ⸬ □)));
 
 
-// lemmas on ∈ₙ
-
-symbol indexes_shift (l: 𝕃 nat) (n : τ nat):
-    π (istrue ((n +1) ∈ₙ (map (+1) l)) ⇒ istrue (n ∈ₙ l))≔
-begin
-    induction
-        {assume n x; refine x}
-        {assume n0;
-        induction
-            {assume h0 n h1; refine h1}
-            {assume n1 l h0 h1 n2 h2;
-            refine orₑ [eqn n2 n0] [eqn n2 n1 or ∈ eqn (n2 +1) (map (+1) l)] (eqn n2 n0 or (eqn n2 n1 or ∈ eqn n2 l)) h2 _ _
-                {assume h3;
-                refine orᵢ₁ (eqn n2 n1 or ∈ eqn n2 l) h3}
-                {assume h3;
-                refine orᵢ₂ (eqn n2 n0) (h1 n2 h3)}}}
-end;
-
-symbol indexes_decrement (id : τ nat) (l0: τ o) (l: 𝕃 o): 
-     π ((id +1) ∈ₙ (indexes (l0 ⸬ l))) → π (id ∈ₙ (indexes l))≔
-begin
-    assume id l0 l;
-    assume h0; 
-    have H1 : π ((istrue (∈ eqn (id +1) (iota 1 (size l)))) ⇒ (istrue (∈ eqn id (iota 0 (size l)))))
-        {have H2: π (iota 1 (size l) = map (+1) (iota 0 (size l)))
-            {refine (eq_sym (mapS_iota (size l) 0))};
-        rewrite H2;
-        refine indexes_shift (iota 0 (size l)) id};
-    refine H1 h0
-end;
-
-
-// disj
+// n-ary disj
 
 symbol disj : 𝕃 o → τ o;
 rule disj ($l1 ⸬ ($c ⸬ $l)) ↪ ($l1 ∨ disj ($c ⸬ $l))
@@ -147,7 +110,7 @@ with disj □ ↪ ⊥;
 assert l0 l1 l2 ⊢ π (disj (l0 ⸬ l1 ⸬ l2  ⸬ l1 ⸬ □)) ≡ π (l0 ∨ (l1 ∨ (l2  ∨ l1)));
 
 opaque symbol disj_head (l0 : τ o) (l : 𝕃 o) : 
-    π (l0) → π (disj (l0 ⸬ l)) ≔
+    π l0 → π (disj (l0 ⸬ l)) ≔
 begin
     assume l0;
     induction
@@ -169,14 +132,28 @@ begin
 end;
 
 opaque symbol disj_correct (l0 : τ o) (l : 𝕃 o) : 
-    π (disj (l0 ⸬ l)) → π (l0 ∨ disj l) ≔
+    π (disj (l0 ⸬ l) = (l0 ∨ disj l)) ≔
 begin
     assume l0;
     induction
-        {assume h1;
-        refine ∨ᵢ₁ h1}
-        {assume x1 l1 h1 h2;
-        refine h2}
+        {simplify; 
+        rewrite ∨⊥; 
+        reflexivity}
+        {simplify;
+        assume x l h0; 
+        reflexivity}
+end;
+
+opaque symbol disj_++_correct (l l' : 𝕃 o) : 
+    π (disj (l ++ l') = (disj l ∨ disj l')) ≔
+begin
+    induction
+        {simplify; assume x; 
+        rewrite ⊥∨; reflexivity}
+        {simplify; assume l0 l h0 l'; 
+        rewrite disj_correct; rewrite disj_correct;
+        rewrite h0 l'; rewrite ∨_assoc;
+        reflexivity}
 end;
 
 opaque symbol lit_imp_disj (c: 𝕃 o) (ks: 𝕃 nat) : 
@@ -225,7 +202,7 @@ begin
         refine ⊥ₑ h1}
     {assume l0 ks h1 h2;
         have H0: π (literal c l0 ∨ disj (literals c ks))
-        {refine disj_correct (literal c l0) (literals c ks) h2};
+        {refine =⇒ (disj_correct (literal c l0) (literals c ks)) h2};
         have H1: π (literal c l0) → π (`∃ x, literal c x ∧ x ∈ₙ (l0 ⸬ ks))
         {assume h3;
         have H1_0: π (literal c l0)
@@ -249,54 +226,7 @@ begin
 end;   
 
 
-// conj
-
-symbol conj : 𝕃 o → τ o;
-rule conj ($l1 ⸬ ($c ⸬ $l)) ↪ ($l1 ∧ conj ($c ⸬ $l))
-with conj ($l1 ⸬ □) ↪ $l1 
-with conj □ ↪ ⊤;
-
-assert l0 l1 l2 ⊢ π (conj (l0 ⸬ l1 ⸬ l2  ⸬ l1 ⸬ □)) ≡ π (l0 ∧ (l1 ∧ (l2  ∧ l1)));
-
-opaque symbol conj_head (c0 : τ o) (c : 𝕃 o) : 
-     π (conj (c0 ⸬ c)) → π (c0) ≔
-begin
-    assume c0;
-    induction
-        {assume h1;
-        refine h1}   
-        {assume x0 c1 h1 h2;
-        refine ∧ₑ₁ h2}
-end; 
-
-opaque symbol conj_tail (c0 : τ o) (c : 𝕃 o) : 
-     π (conj (c0 ⸬ c)) → π (conj c) ≔
-begin
-    assume c0;
-    induction
-        {assume h1;
-        refine ⊤ᵢ}   
-        {assume x0 c1 h1 h2; 
-        refine ∧ₑ₂ h2}
-end; 
-
-opaque symbol conj_correct (c0 : τ o) (c : 𝕃 o) : 
-    π (conj (c0 ⸬ c)) → π (c0 ∧ conj c) ≔
-begin
-    assume c0;
-    induction
-        {assume h1;
-        refine ∧ᵢ h1 ⊤ᵢ}
-        {assume x1 c1 h1 h2;
-        refine h2}
-end;
-
-
 // ⊆
-
-symbol ⊆  [a] : (τ a → τ a → 𝔹) → 𝕃 a → 𝕃 a → 𝔹;
-rule ⊆ $beq ($k0 ⸬ $k) $l ↪ (∈ $beq $k0 $l) and (⊆ $beq $k $l)
-with ⊆ _ □ _ ↪ true;
 
 symbol ⊆ₙ ≔ ⊆ eqn;
 notation ⊆ₙ infix right 30.000000;
@@ -327,13 +257,13 @@ end;
 // preserves_contents
 
 symbol preserves_contents: 𝕃 nat → 𝕃 o → 𝔹;
-rule preserves_contents  $f $l ↪ (indexes $l) ⊆ₙ $f;
+rule preserves_contents  $f $l ↪ indexes $l ⊆ₙ $f;
 
 assert l0 l1 l2 ⊢ 
     preserves_contents (1 ⸬ 2 ⸬ 0 ⸬ 3 ⸬ □) (l0 ⸬ l1 ⸬ l2 ⸬ l1 ⸬ □) ≡ true;
 
 opaque symbol preserves_contents_correct (n: τ nat) (σ : 𝕃 nat) (l: 𝕃 o) : 
-    π (preserves_contents σ l) →  π (n ∈ₙ (indexes l)) → π (n ∈ₙ σ) ≔
+    π (preserves_contents σ l) →  π (n ∈ₙ indexes l) → π (n ∈ₙ σ) ≔
 begin
     assume n σ l h1 h2;
     refine ⊆ₙ_el n σ (indexes l) h1 h2;   
@@ -341,43 +271,64 @@ end;
 
 
 ////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////// meta-therems /////////////////////////////////
+///////////////////////////////// meta-theorems ////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-// clause selection theorem
+///////////////////// Natural Deduction rules over lists ///////////////////////
 
-//orig
-opaque symbol select (id : τ nat) (cnf: 𝕃 o) : 
-    π (id ∈ₙ (indexes cnf)) → π (conj cnf) → π (literal cnf id) ≔
+// ∨ᵢₙ
+opaque symbol ∨ᵢₙ (c0 : 𝕃 o) (c1 : 𝕃 o) (c2 : 𝕃 o) : 
+    π (disj c1) → π (disj (c0 ++ c1 ++ c2))≔
 begin
-    induction 
+    induction
+        {assume x c2 h0; simplify;
+        rewrite disj_++_correct; refine ∨ᵢ₁ h0}
+        {assume x0 l h0 x1 x2 h1; simplify;  
+        rewrite disj_correct; refine ∨ᵢ₂ (h0 x1 x2 h1)}
+end;
+
+// ∨ₑₙ 
+opaque symbol ∨ₑₙ (n : ℕ) (c : 𝕃 o) [r : Prop] : 
+    π (disj c) → π (literal c n ⇒ r) → π (disj (rem_nth c n) ⇒ r) → π r ≔
+begin
+    induction
         {induction
-            {assume h0 h1; refine h0}
-            {assume x cnf h0 h1 h2; 
-            refine conj_head x cnf h2}}
-        {assume id h0;
-        induction
-            {assume b; refine ⊥ₑ b}
-            {assume x cnf h1 h2 h3;
-            have ConjImpCl : π (conj cnf ⇒ literal cnf id)
-                {refine h0 cnf (indexes_decrement id x cnf h2)};
-            refine literal_ext cnf x id (ConjImpCl (conj_tail x cnf h3))}}
+            {assume x h0 h1 h2; refine ⊥ₑ h0}
+            {assume l0 l h0 r h1 h2 h3;
+             refine ∨ₑ (=⇒ (disj_correct l0 l) h1) _ _
+                {assume h4; refine h2 h4}
+                {assume h4; refine h3 h4}}}
+        {assume n h0; induction
+            {assume r h1 h2 h3; refine ⊥ₑ h1}
+            {assume l0 l h1 r h2 h3 h4;
+            have H1 : π ((l0  ∨ (disj (rem_nth l n))) ⇒ r)
+                    {rewrite left disj_correct; refine h4};
+            refine ∨ₑ (em l0) _ _
+                {assume h5;
+                refine H1 ((∨ᵢ₁ [l0] [disj (rem_nth l n)]) h5)}
+                {assume h5;
+                have l0is⊥ : π (⊥ = l0)
+                    {refine propExt ⊥ l0 _ _
+                        {assume h6; refine ⊥ₑ h6}
+                         {assume h6; refine h5 h6}};
+                refine h0 l r _ h3 _
+                    {rewrite left ⊥∨; rewrite l0is⊥;
+                    rewrite left disj_correct l0 l; refine h2}
+                    {rewrite left ⊥∨ (disj (rem_nth l n)); 
+                    rewrite l0is⊥; refine H1}}}}        
 end;
 
 
-// permutation theorem 
-
+// permutation theorem /////////////////////////////////////////////////////////
 opaque symbol permute (σ : 𝕃 nat) (c: 𝕃 o) : 
     π (preserves_contents σ c) → π(disj c) → π(disj (literals c σ)) ≔
 begin
     assume σ c h1 h2;
-    
     have H1: Π x: τ nat,
         π ((λ x1, literal c x1 ∧ x1 ∈ₙ indexes c) x)
         → π (`∃ y, literal c y ∧ y ∈ₙ σ)
         {assume x0 h3;
         refine ∃ᵢ x0 (∧ᵢ (∧ₑ₁ h3) (preserves_contents_correct x0 σ c h1 (∧ₑ₂ h3)))};
-    
     have H2: π (`∃ y, literal c y ∧ y ∈ₙ σ)
         {have H3: π (disj (nths ⊥ c (indexes c)))
             {rewrite nths_indexes_id ⊥ c;
@@ -390,6 +341,7 @@ assert l0 l1 l2 ⊢ permute (1 ⸬ 2 ⸬ 0 ⸬ 3 ⸬ □) (l0 ⸬ l1 ⸬ l2 ⸬ 
     π (l0 ∨ l1 ∨ l2 ∨ l0) → π (l1 ∨ l2 ∨ l0 ∨ l0);
 
 
+// double literal deletion theorem /////////////////////////////////////////////
 opaque symbol delete (id_list : 𝕃 nat) (output_list : 𝕃 nat) (c: 𝕃 o) : 
     π (id_list ⊆ₙ output_list) → π(disj (literals c id_list)) → π(disj (literals c output_list)) ≔
 begin
@@ -399,16 +351,26 @@ begin
     assume n h3;
     refine ∃ᵢ n (∧ᵢ (∧ₑ₁ h3)
         (⊆ₙ_el n output_list id_list h1 (∧ₑ₂ h3)))
-end;    
+end; 
 
-assert l0 l1 l2 ⊢ delete (0 ⸬ 1 ⸬ 2 ⸬ 1 ⸬ □) (0 ⸬ 1 ⸬ 2 ⸬ □) (l0 ⸬ l1 ⸬ l2 ⸬ l1 ⸬ □) ⊤ᵢ : 
-    π (l0 ∨ l1 ∨ l2 ∨ l1) → π (l0 ∨ l1 ∨ l2);
+assert l0 l1 l2 ⊢ delete (0 ⸬ 1 ⸬ 0 ⸬ 0 ⸬ 2 ⸬ □) (0 ⸬ 1 ⸬ 2 ⸬ □) (l0 ⸬ l1 ⸬ l2 ⸬ □) ⊤ᵢ: 
+    π (l0 ∨ l1 ∨ l0 ∨ l0 ∨ l2) → π (l0 ∨ l1 ∨ l2);
+
+    
+opaque symbol deleteDoubles (id_list : 𝕃 nat) (c: 𝕃 o) : 
+    π(disj (literals c id_list)) → π(disj (literals c (undup_first eqn id_list))) ≔
+begin
+    assume id_list c h2;
+    refine delete id_list (undup_first eqn id_list) c (subset_undup_first eqn eqn_correct eqn_refl eqn_sym id_list) h2;
+end; 
+
+assert l0 l1 l2 ⊢ deleteDoubles (0 ⸬ 1 ⸬ 0 ⸬ 0 ⸬ 2 ⸬ □) (l0 ⸬ l1 ⸬ l2 ⸬ □): 
+    π (l0 ∨ l1 ∨ l0 ∨ l0 ∨ l2) → π (l0 ∨ l1 ∨ l2);
 
 
-// transformation theorem 
-
+// transformation theorem //////////////////////////////////////////////////////
 opaque symbol transform [l : τ o] (c: 𝕃 o) (n : τ nat) : 
-π ((literal c n) ⇒ l) → π (disj c) → π (disj (set_nth ⊥ c n l)) ≔
+π (literal c n ⇒ l) → π (disj c) → π (disj (set_nth ⊥ c n l)) ≔
 begin
     assume l;
     induction
@@ -418,7 +380,7 @@ begin
         induction
             {assume h2 h3;
             have H0: π (x ∨ disj clause)
-                {refine disj_correct x clause h3};
+                {refine =⇒ (disj_correct x clause) h3};
             have H1: π x → π (disj (l ⸬ clause))
                 {assume h4;
                 refine disj_head l clause (h2 h4)};
@@ -428,7 +390,7 @@ begin
             refine ∨ₑ H0 H1 H2}
             {assume n h2 h3 h4;
             have H00: π (x ∨ disj clause)
-                {refine disj_correct x clause h4};
+                {refine =⇒ (disj_correct x clause) h4};
             have H10: π x → π (disj (x ⸬ set_nth ⊥ clause n l))
                 {assume h5;
                 refine disj_head x (set_nth ⊥ clause n l) h5};
@@ -442,6 +404,3 @@ end;
 
 assert l0 l1 l2 l2' ⊢ transform [l2'] (l0 ⸬ l1 ⸬ l2 ⸬ l1 ⸬ □) 2 : 
     (π l2 → π l2') →  π (l0 ∨ l1 ∨ l2 ∨ l1) → π (l0 ∨ l1 ∨ l2' ∨ l1);
-
-
- 
