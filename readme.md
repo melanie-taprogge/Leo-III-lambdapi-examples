@@ -3,7 +3,7 @@
 
 This repository contains examples demonstrating the ongoing work on the integration of the higher‑order logic automated theorem prover [Leo‑III](https://github.com/leoprover/Leo-III) with the Dedukti framework through output proofs that are verifiable using the interactive proof assistant [Lambdapi](https://github.com/Deducteam/lambdapi). The encodings and examples presented here are part of ongoing research described in the unpublished paper *Formal Verification of Proofs from Automated Theorem Provers for Higher-Order Logic*.
 
-This repository provides an overview and example applications of all of the encodings derived in the project so far. Some of the rules listed here have since been integrated into the Lambdapi standard library (for instance, the rules shown here in `simpRules.lp` are now included in `propExt.lp`, and the rules in `literalLevelOperations` and `multiND.lp` make up the standard library files `Disj.lp` and `Conj.lp`). Rules that are not part of the standard library but are used in our encodings live in the companion library [Leo-III-lambdapi-lib](https://github.com/Deducteam/Leo-III-lambdapi-lib). This repository complements them with theoretical encodings of rules for which the automated encoding is not yet implemented in Leo‑III’s Lambdapi output. All encodings of the *full* EP calculus are collected in `epCalculus.lp`.
+This repository provides an overview and example applications of all of the encodings derived in the project so far. Some of the rules listed here have since been integrated into the Lambdapi standard library (for instance, the rules shown here in `simpRules.lp` are now included in `propExt.lp`, and the rules in `Disj.lp` and `Conj.lp` make up the standard library files with the corresponding names `Disj.lp` and `Conj.lp`). Rules that are not part of the standard library but are used in our encodings live in the companion library [Leo-III-lambdapi-lib](https://github.com/Deducteam/Leo-III-lambdapi-lib). This repository complements them with theoretical encodings of rules for which the automated encoding is not yet implemented in Leo‑III’s Lambdapi output. All encodings of the *full* EP calculus are collected in `epCalculus.lp`.
 
 
 ## Repository Structure
@@ -28,11 +28,8 @@ This repository provides an overview and example applications of all of the enco
   - **`simpRules.lp`**  
     Encodes the Boolean simplification identities used in Leo‑III’s term‑simplification, along with a user‑defined Lambdapi tactic that applies them exhaustively.
 
-  - **`literalLevelTransformations.lp`**
+  - **`Disj.lp`** and **`Conj.lp`**
     Encodes the implicit clause‑ and literal‑level transformations `transform`, `permute`, `delete` and `select`. 
-
-  - **`multiND.lp`**
-    Encodes n-ary versions of ND rules for disjunction and conjunction. 
   
   - **`Makefile` and `lambdapi.pkg`**  
     Package files required by Lambdapi.
