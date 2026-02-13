@@ -37,7 +37,7 @@ require open lambdapi-examples.simpRules lambdapi-examples.Disj lambdapi-example
        symbol proof_R_example   – a proof term that eliminates or transforms them
 
  Notes: 
-     • Generated proofs often rely on additional implicit transformations and
+     • Generated proofs often rely on additional implicit transformations 
        performed by the Leo-III implementation (e.g. permutation of clauses, simplifications, ...). 
        These are omitted here but can generally be encoded using additional steps in proofs.
      • Here we define a new symbol for rule applications that - in the automatically generated
